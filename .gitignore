@@ -1,0 +1,10 @@
+# Python
+__pycache__/
+*.pyc
+src/desktop/venv/
+data/
+
+# Node.js
+electron/node_modules/
+electron/package-lock.json   
+electron/.npmrc
