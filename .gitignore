@@ -8,3 +8,7 @@ data/
 electron/node_modules/
 electron/package-lock.json   
 electron/.npmrc
+
+# ai操作内容
+ai_op_logs/
+.trae/

@@ -1,7 +1,9 @@
-import pywifi 
+import pywifi
 from pywifi import const
 import time
 import urllib.request
+import sys
+import json
 
 # 判断网络连接状态
 def is_network_available(timeout: int = 3) -> bool:
@@ -132,23 +134,22 @@ def connect_wifi(ssid: str, password: str, verbose: bool = True, timeout: int = 
         if verbose:
             print("未找到无线网卡，无法连接Wi-Fi")
         return False
-    
+
     try:
-        # 可能后续会在有wifi的情况去使用
         # 断开当前连接
-        # iface.disconnect()
-        # time.sleep(1)
+        if iface.status() == const.IFACE_CONNECTED:
+            iface.disconnect()
+            time.sleep(1)
 
         # 创建连接配置
         profile = pywifi.Profile()
         profile.ssid = ssid
         profile.auth = const.AUTH_ALG_OPEN
-        profile.akm.append(const.AKM_TYPE_WPA2PSK)  # WPA2-PSK加密兼容 WPA-PSK
+        profile.akm.append(const.AKM_TYPE_WPA2PSK)
         profile.cipher = const.CIPHER_TYPE_CCMP
         profile.key = password
 
-        # 添加设置到网卡
-        # 只删除与当前 ssid 匹配的旧配置
+        # 删除旧配置
         for pf in iface.network_profiles():
             if pf.ssid == ssid:
                 iface.remove_network_profile(pf)
@@ -156,27 +157,26 @@ def connect_wifi(ssid: str, password: str, verbose: bool = True, timeout: int = 
 
         # 连接Wi-Fi
         iface.connect(tmp_profile)
-        if verbose:
-            print(f"正在连接Wi-Fi '{ssid}'...")
-        
 
         # 等待连接结果
         start = time.time()
         disconnect_count = 0
         while time.time() - start < timeout:
             if iface.status() == const.IFACE_CONNECTED:
-                if verbose:
-                    print(f"成功连接到Wi-Fi '{ssid}'")
-                return True
+                time.sleep(1)
+                if iface.status() == const.IFACE_CONNECTED:
+                    if verbose:
+                        print(f"成功连接到Wi-Fi '{ssid}'")
+                    return True
             if iface.status() in [const.IFACE_DISCONNECTED, const.IFACE_INACTIVE]:
                 disconnect_count += 1
-                if disconnect_count >= 3:  # 连续三次断开，认为连接失败
+                if disconnect_count >= 3:
                     if verbose:
                         print(f"连接Wi-Fi '{ssid}' 失败")
                     return False
             time.sleep(0.5)
         if verbose:
-            print(f"连接Wi-Fi '{ssid}' 超时（{timeout}秒）")
+            print(f"连接Wi-Fi '{ssid}' 超时")
         return False
     except Exception as e:
         if verbose:
@@ -185,5 +185,21 @@ def connect_wifi(ssid: str, password: str, verbose: bool = True, timeout: int = 
    
 
 if __name__ == "__main__":
-    print(f"可连接的Wi-Fi网络: {scan_available_wifi()}")
-    connect_wifi("caixiang", "00000000")
+    if len(sys.argv) < 2:
+        print(f"可连接的Wi-Fi网络: {scan_available_wifi()}")
+        connect_wifi("caixiang", "00000000")
+    else:
+        operation = sys.argv[1]
+        if operation == "scan":
+            result = scan_available_wifi(verbose=False)
+            print(json.dumps({"success": True, "networks": result}, ensure_ascii=False))
+        elif operation == "status":
+            result = is_network_available()
+            print(json.dumps({"success": True, "connected": result}, ensure_ascii=False))
+        elif operation == "connect" and len(sys.argv) >= 4:
+            ssid = sys.argv[2]
+            password = sys.argv[3]
+            success = connect_wifi(ssid, password, verbose=False)
+            print(json.dumps({"success": success}, ensure_ascii=False))
+        else:
+            print(json.dumps({"success": False, "error": "Unknown operation"}, ensure_ascii=False))

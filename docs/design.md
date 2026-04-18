@@ -50,6 +50,7 @@
 
 #### 数据流向
 
+- 整体结构
 ```mermaid
 flowchart TB
     Start([启动桌面程序]) --> CheckNet{检测网络连接}
@@ -78,6 +79,50 @@ flowchart TB
     style Cloud fill:#d5e8d4
     style SaveUpdate fill:#fff2cc
     style SaveNew fill:#fff2cc
+```
+
+- 数据调用
+```mermaid
+graph TD
+    subgraph "渲染进程 Renderer Process"
+        A["offline.html 用户界面"]
+        A1["scanWifi() 函数"]
+        A2["window.wifiAPI.scan()"]
+    end
+
+    subgraph "预加载脚本 Preload"
+        B["preload.js<br>contextBridge.exposeInMainWorld<br>暴露 wifiAPI 对象"]
+    end
+
+    subgraph "主进程 Main Process"
+        C["main.js IPC 监听器<br>ipcMain.handle('wifi:scan')"]
+        D["executePython 函数<br>child_process.spawn"]
+    end
+
+    subgraph "子进程 Child Process"
+        E["Python 解释器<br>venv/Scripts/python.exe"]
+        F["wifi.py 命令行入口<br>main() 函数"]
+        G["pywifi 库"]
+        H["无线网卡驱动"]
+    end
+
+    A -->|"1. 用户点击扫描"| A1
+    A1 -->|"2. 调用"| A2
+    A2 -->|"3. ipcRenderer.invoke(wifi:scan)"| B
+    B -->|"4. 转发到"| C
+    C -->|"5. 调用 executePython(scan)"| D
+    D -->|"6. spawn python wifi.py scan"| E
+    E -->|"7. 执行脚本"| F
+    F -->|"8. 调用 scan_available_wifi()"| G
+    G -->|"9. 调用网卡扫描"| H
+    H -->|"10. 返回扫描结果"| G
+    G -->|"11. 返回 WiFi 列表"| F
+    F -->|"12. json.dumps 输出 JSON 到 stdout"| E
+    E -->|"13. 子进程输出"| D
+    D -->|"14. 解析 JSON resolve Promise"| C
+    C -->|"15. IPC 返回结果"| B
+    B -->|"16. Promise resolve"| A2
+    A1 -->|"17. renderWifiList() 显示列表"| A
 ```
 
 #### 本地数据存储

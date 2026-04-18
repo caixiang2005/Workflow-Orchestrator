@@ -13,6 +13,11 @@
 ├── README.md                  # 项目说明文档
 ├── requirements.txt           # 全局 Python 依赖（如 Flask、pywifi）
 │
+├── .trae/ 
+│   └── rules                  # 记录vibecoding规则
+│
+├── ai_op_logs/                # 记录保存ai操作日志
+│
 ├── data/                      # 数据存储目录
 │   └── wifi.db                # WiFi 历史记录数据库（SQLite）
 │
@@ -28,6 +33,7 @@
 │   │   └── offline.html       # 离线管理页面（WiFi 连接界面）
 │   ├── .npmrc                 # npm 配置（镜像源）
 │   ├── main.js                # Electron 主进程入口
+│   ├── preload.js             # 开放安全接口内容
 │   ├── package.json           # 前端依赖管理
 │   └── package-lock.json      # 依赖版本锁定
 │
