@@ -6,67 +6,132 @@
   <title>Workflow Launcher</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-      min-height: 100vh;
+      background: #1a1a2e;
+      height: 100vh;
       color: #fff;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
     }
-
+    .tab-bar {
+      display: flex;
+      align-items: center;
+      background: #0d0d1a;
+      padding: 8px 12px;
+      gap: 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      min-height: 42px;
+      flex-shrink: 0;
+    }
+    .tab {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px 8px 0 0;
+      cursor: pointer;
+      max-width: 200px;
+      transition: all 0.2s;
+      font-size: 13px;
+    }
+    .tab:hover { background: rgba(255,255,255,0.1); }
+    .tab.active {
+      background: rgba(0,212,255,0.15);
+      border-color: #00d4ff;
+      color: #00d4ff;
+    }
+    .tab-title {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1;
+    }
+    .tab-close {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      opacity: 0.6;
+      transition: all 0.2s;
+    }
+    .tab-close:hover {
+      opacity: 1;
+      background: rgba(255,71,87,0.3);
+    }
+    .tab-add {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      background: rgba(0,212,255,0.15);
+      color: #00d4ff;
+      transition: all 0.2s;
+      border: none;
+      font-size: 14px;
+    }
+    .tab-add:hover { background: rgba(0,212,255,0.3); }
+    .content-area {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+      min-height: 0;
+    }
+    .page {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      display: none;
+    }
+    .page.active { display: flex; flex-direction: column; }
+    .page webview {
+      flex: 1;
+      border: none;
+      background: #fff;
+    }
     .container {
       max-width: 600px;
       margin: 0 auto;
       padding: 40px 20px;
     }
-
-    .header {
-      text-align: center;
-      margin-bottom: 40px;
+    .header { text-align: center; margin-bottom: 40px; }
+    .header h1 { font-size: 28px; font-weight: 600; margin-bottom: 8px; }
+    .header p { color: #888; font-size: 14px; }
+    .demo-link {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 8px 16px;
+      background: rgba(0,212,255,0.15);
+      border: 1px solid rgba(0,212,255,0.3);
+      border-radius: 8px;
+      color: #00d4ff;
+      text-decoration: none;
+      font-size: 13px;
+      transition: all 0.3s ease;
+      cursor: pointer;
     }
-
-    .header h1 {
-      font-size: 28px;
-      font-weight: 600;
-      margin-bottom: 8px;
+    .demo-link:hover {
+      background: rgba(0,212,255,0.25);
+      transform: translateY(-2px);
     }
-
-    .header p {
-      color: #888;
-      font-size: 14px;
-    }
-
     .wifi-card {
-      background: rgba(255, 255, 255, 0.05);
+      background: rgba(255,255,255,0.05);
       border-radius: 16px;
       padding: 24px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255,255,255,0.1);
     }
-
-    .wifi-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-
-    .wifi-header h2 {
-      font-size: 18px;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .wifi-header h2 i {
-      color: #00d4ff;
-    }
-
+    .wifi-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .wifi-header h2 { font-size: 18px; font-weight: 500; display: flex; align-items: center; gap: 10px; }
+    .wifi-header h2 i { color: #00d4ff; }
     .btn {
       padding: 10px 20px;
       border: none;
@@ -79,318 +144,128 @@
       gap: 8px;
       transition: all 0.3s ease;
     }
-
     .btn-primary {
       background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
       color: #fff;
     }
-
     .btn-primary:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 15px rgba(0, 212, 255, 0.4);
+      box-shadow: 0 4px 15px rgba(0,212,255,0.4);
     }
-
-    .btn-primary:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    .btn-secondary {
-      background: rgba(255, 255, 255, 0.1);
-      color: #fff;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.15);
-    }
-
-    .wifi-list {
-      list-style: none;
-      max-height: 400px;
-      overflow-y: auto;
-    }
-
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .btn-secondary { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); }
+    .btn-secondary:hover { background: rgba(255,255,255,0.15); }
+    .wifi-list { list-style: none; max-height: 400px; overflow-y: auto; }
     .wifi-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 14px 16px;
-      border-radius: 10px;
-      margin-bottom: 8px;
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid transparent;
-      cursor: pointer;
-      transition: all 0.2s ease;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 16px; border-radius: 10px; margin-bottom: 8px;
+      background: rgba(255,255,255,0.03); border: 1px solid transparent;
+      cursor: pointer; transition: all 0.2s ease;
     }
-
-    .wifi-item:hover {
-      background: rgba(255, 255, 255, 0.08);
-      border-color: rgba(0, 212, 255, 0.3);
-    }
-
-    .wifi-info {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
+    .wifi-item:hover { background: rgba(255,255,255,0.08); border-color: rgba(0,212,255,0.3); }
+    .wifi-info { display: flex; align-items: center; gap: 12px; }
     .wifi-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 10px;
-      background: rgba(0, 212, 255, 0.15);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      width: 40px; height: 40px; border-radius: 10px;
+      background: rgba(0,212,255,0.15);
+      display: flex; align-items: center; justify-content: center;
     }
-
-    .wifi-icon i {
-      color: #00d4ff;
-      font-size: 18px;
-    }
-
-    .wifi-name {
-      font-size: 15px;
-      font-weight: 500;
-    }
-
-    .wifi-signal {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .signal-bars {
-      display: flex;
-      gap: 2px;
-    }
-
-    .signal-bar {
-      width: 4px;
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 2px;
-    }
-
+    .wifi-icon i { color: #00d4ff; font-size: 18px; }
+    .wifi-name { font-size: 15px; font-weight: 500; }
+    .wifi-signal { display: flex; align-items: center; gap: 8px; }
+    .signal-bars { display: flex; gap: 2px; }
+    .signal-bar { width: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; }
     .signal-bar:nth-child(1) { height: 6px; }
     .signal-bar:nth-child(2) { height: 10px; }
     .signal-bar:nth-child(3) { height: 14px; }
     .signal-bar:nth-child(4) { height: 18px; }
-
-    .signal-bar.active {
-      background: #00d4ff;
-    }
-
-    .signal-text {
-      font-size: 12px;
-      color: #888;
-      min-width: 40px;
-      text-align: right;
-    }
-
+    .signal-bar.active { background: #00d4ff; }
+    .signal-text { font-size: 12px; color: #888; min-width: 40px; text-align: right; }
     .status-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 16px;
-      background: rgba(255, 255, 255, 0.03);
-      border-radius: 10px;
-      margin-top: 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px; background: rgba(255,255,255,0.03);
+      border-radius: 10px; margin-top: 16px;
     }
-
-    .status-info {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 14px;
-    }
-
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #ff4757;
-    }
-
-    .status-dot.connected {
-      background: #2ed573;
-    }
-
+    .status-info { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #ff4757; }
+    .status-dot.connected { background: #2ed573; }
     .modal-overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.7);
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
+      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7); align-items: center; justify-content: center; z-index: 2000;
     }
-
-    .modal-overlay.active {
-      display: flex;
-    }
-
+    .modal-overlay.active { display: flex; }
     .modal {
-      background: #1a1a2e;
-      border-radius: 16px;
-      padding: 28px;
-      width: 90%;
-      max-width: 400px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: #1a1a2e; border-radius: 16px; padding: 28px;
+      width: 90%; max-width: 400px; border: 1px solid rgba(255,255,255,0.1);
     }
-
-    .modal h3 {
-      font-size: 18px;
-      margin-bottom: 8px;
-    }
-
-    .modal p {
-      color: #888;
-      font-size: 14px;
-      margin-bottom: 20px;
-    }
-
-    .input-group {
-      margin-bottom: 20px;
-    }
-
-    .input-group label {
-      display: block;
-      font-size: 13px;
-      color: #888;
-      margin-bottom: 8px;
-    }
-
+    .modal h3 { font-size: 18px; margin-bottom: 8px; }
+    .modal p { color: #888; font-size: 14px; margin-bottom: 20px; }
+    .input-group { margin-bottom: 20px; }
+    .input-group label { display: block; font-size: 13px; color: #888; margin-bottom: 8px; }
     .input-group input {
-      width: 100%;
-      padding: 12px 16px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 8px;
-      color: #fff;
-      font-size: 14px;
-      outline: none;
+      width: 100%; padding: 12px 16px; background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;
+      color: #fff; font-size: 14px; outline: none;
     }
-
-    .input-group input:focus {
-      border-color: #00d4ff;
-    }
-
-    .modal-buttons {
-      display: flex;
-      gap: 12px;
-      justify-content: flex-end;
-    }
-
-    .loading {
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 40px;
-      color: #888;
-    }
-
-    .loading.active {
-      display: flex;
-    }
-
-    .loading i {
-      margin-right: 10px;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 40px;
-      color: #666;
-    }
-
-    .empty-state i {
-      font-size: 48px;
-      margin-bottom: 16px;
-      color: #444;
-    }
-
-    .empty-state p {
-      font-size: 14px;
-    }
-
+    .input-group input:focus { border-color: #00d4ff; }
+    .modal-buttons { display: flex; gap: 12px; justify-content: flex-end; }
+    .loading { display: none; align-items: center; justify-content: center; padding: 40px; color: #888; }
+    .loading.active { display: flex; }
+    .loading i { margin-right: 10px; animation: spin 1s linear infinite; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .empty-state { text-align: center; padding: 40px; color: #666; }
+    .empty-state i { font-size: 48px; margin-bottom: 16px; color: #444; }
+    .empty-state p { font-size: 14px; }
     .log-area {
-      margin-top: 20px;
-      padding: 12px;
-      background: rgba(0, 0, 0, 0.3);
-      border-radius: 8px;
-      font-family: monospace;
-      font-size: 12px;
-      max-height: 150px;
-      overflow-y: auto;
-      display: none;
+      margin-top: 20px; padding: 12px; background: rgba(0,0,0,0.3);
+      border-radius: 8px; font-family: monospace; font-size: 12px;
+      max-height: 150px; overflow-y: auto; display: none;
     }
-
-    .log-area.active {
-      display: block;
-    }
-
-    .log-line {
-      color: #888;
-      margin-bottom: 4px;
-    }
-
-    .log-line.error {
-      color: #ff4757;
-    }
-
-    .log-line.success {
-      color: #2ed573;
-    }
+    .log-area.active { display: block; }
+    .log-line { color: #888; margin-bottom: 4px; }
+    .log-line.error { color: #ff4757; }
+    .log-line.success { color: #2ed573; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <h1><i class="fas fa-rocket"></i> Workflow Launcher</h1>
-      <p>桌面环境离线入口</p>
-    </div>
+  <div class="tab-bar">
+    <button class="tab-add" id="addTabBtn" title="新建标签"><i class="fas fa-plus"></i></button>
+  </div>
 
-    <div class="wifi-card">
-      <div class="wifi-header">
-        <h2><i class="fas fa-wifi"></i> 无线网络</h2>
-        <button class="btn btn-primary" id="scanBtn" onclick="scanWifi()">
-          <i class="fas fa-sync-alt"></i> 扫描网络
-        </button>
-      </div>
-
-      <div class="loading" id="loading">
-        <i class="fas fa-spinner"></i> 正在扫描...
-      </div>
-
-      <div class="empty-state" id="emptyState">
-        <i class="fas fa-wifi"></i>
-        <p>点击"扫描网络"查找可用的Wi-Fi</p>
-      </div>
-
-      <ul class="wifi-list" id="wifiList"></ul>
-
-      <div class="status-bar">
-        <div class="status-info">
-          <span class="status-dot" id="statusDot"></span>
-          <span id="statusText">未连接</span>
+  <div class="content-area">
+    <div class="page active" data-page-id="0" data-title="主页">
+      <div class="container">
+        <div class="header">
+          <h1><i class="fas fa-rocket"></i> Workflow Launcher</h1>
+          <p>桌面环境离线入口</p>
+          <span class="demo-link" id="demoLink"><i class="fas fa-external-link-alt"></i> 窗口内跳转测试</span>
         </div>
-        <button class="btn btn-secondary" onclick="toggleLog()">
-          <i class="fas fa-terminal"></i> 日志
-        </button>
-      </div>
 
-      <div class="log-area" id="logArea"></div>
+        <div class="wifi-card">
+          <div class="wifi-header">
+            <h2><i class="fas fa-wifi"></i> 无线网络</h2>
+            <button class="btn btn-primary" id="scanBtn"><i class="fas fa-sync-alt"></i> 扫描网络</button>
+          </div>
+
+          <div class="loading" id="loading"><i class="fas fa-spinner"></i> 正在扫描...</div>
+
+          <div class="empty-state" id="emptyState">
+            <i class="fas fa-wifi"></i>
+            <p>点击"扫描网络"查找可用的Wi-Fi</p>
+          </div>
+
+          <ul class="wifi-list" id="wifiList"></ul>
+
+          <div class="status-bar">
+            <div class="status-info">
+              <span class="status-dot" id="statusDot"></span>
+              <span id="statusText">未连接</span>
+            </div>
+            <button class="btn btn-secondary" id="toggleLogBtn"><i class="fas fa-terminal"></i> 日志</button>
+          </div>
+
+          <div class="log-area" id="logArea"></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -403,10 +278,8 @@
         <input type="password" id="passwordInput" placeholder="请输入密码">
       </div>
       <div class="modal-buttons">
-        <button class="btn btn-secondary" onclick="closeModal()">取消</button>
-        <button class="btn btn-primary" onclick="confirmConnect()">
-          <i class="fas fa-link"></i> 连接
-        </button>
+        <button class="btn btn-secondary" id="cancelConnectBtn">取消</button>
+        <button class="btn btn-primary" id="confirmConnectBtn"><i class="fas fa-link"></i> 连接</button>
       </div>
     </div>
   </div>
@@ -414,6 +287,166 @@
   <script>
     let currentSsid = '';
     let logVisible = false;
+    let pageIdCounter = 0;
+
+    if (window.electronAPI) {
+      window.electronAPI.onOpenNewTab = (url) => {
+        const title = url.includes('baidu') ? '百度' : url.includes('douyin') ? '豆包' : new URL(url).hostname;
+        openPage(url, title);
+      };
+    }
+
+
+
+    function renderTabs() {
+      const pages = document.querySelectorAll('.page');
+      const tabBar = document.querySelector('.tab-bar');
+      const addBtn = document.getElementById('addTabBtn');
+      document.querySelectorAll('.tab').forEach(t => t.remove());
+
+      pages.forEach((page) => {
+        const tabEl = document.createElement('div');
+        tabEl.className = `tab ${page.classList.contains('active') ? 'active' : ''}`;
+        tabEl.dataset.id = page.dataset.pageId;
+        tabEl.innerHTML = `
+          <span class="tab-title">${page.dataset.title || '页面'}</span>
+          ${pages.length > 1 ? `<span class="tab-close" data-id="${page.dataset.pageId}"><i class="fas fa-times"></i></span>` : ''}
+        `;
+        tabEl.onclick = (e) => {
+          if (!e.target.closest('.tab-close')) switchPage(parseInt(page.dataset.pageId));
+        };
+        tabBar.insertBefore(tabEl, addBtn);
+      });
+
+      document.querySelectorAll('.tab-close').forEach(btn => {
+        btn.onclick = (e) => {
+          e.stopPropagation();
+          closePage(parseInt(btn.dataset.id));
+        };
+      });
+    }
+
+    function switchPage(pageId) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelector(`.page[data-page-id="${pageId}"]`).classList.add('active');
+      renderTabs();
+    }
+
+    function closePage(pageId) {
+      const page = document.querySelector(`.page[data-page-id="${pageId}"]`);
+      if (!page) return;
+      const wasActive = page.classList.contains('active');
+      page.remove();
+      if (wasActive) {
+        const firstPage = document.querySelector('.page');
+        if (firstPage) switchPage(parseInt(firstPage.dataset.pageId));
+      }
+      renderTabs();
+    }
+
+    function openPage(url, title) {
+      const existingPage = document.querySelector(`.page[data-url="${url}"]`);
+      if (existingPage) {
+        switchPage(parseInt(existingPage.dataset.pageId));
+        return;
+      }
+
+      const pageId = ++pageIdCounter;
+      const contentArea = document.querySelector('.content-area');
+
+      const newPage = document.createElement('div');
+      newPage.className = 'page';
+      newPage.dataset.pageId = pageId;
+      newPage.dataset.title = title || new URL(url).hostname;
+      newPage.dataset.url = url;
+      newPage.innerHTML = `<webview src="${url}" partition="persist:webview${pageId}" allowpopups="true"></webview>`;
+
+      const webview = newPage.querySelector('webview');
+
+      webview.addEventListener('will-navigate', (e) => {
+        const currentUrl = (() => { try { return webview.getURL(); } catch { return ''; } })();
+        if (e.url !== currentUrl && e.url !== 'about:blank') {
+          e.preventDefault();
+          const title = (() => {
+            try { return new URL(e.url).hostname; } catch { return '新页面'; }
+          })();
+          openPage(e.url, title);
+        }
+      });
+
+      webview.addEventListener('new-window', (e) => {
+        e.preventDefault();
+        const title = (() => {
+          try { return new URL(e.url).hostname; } catch { return '新页面'; }
+        })();
+        openPage(e.url, title);
+      });
+
+      webview.addEventListener('dom-ready', () => {
+        const script = `
+          (function() {
+            if (window.__intercepted) return;
+            window.__intercepted = true;
+            document.addEventListener('click', function(e) {
+              var link = e.target.closest('a');
+              if (link && link.href && !link.href.startsWith('javascript:') && !link.href.startsWith('mailto:') && link.target !== '_self') {
+                e.preventDefault();
+                e.stopPropagation();
+                document.title = '__OPEN_TAB__' + link.href;
+              }
+            }, true);
+          })();
+        `;
+        webview.executeJavaScript(script).catch((err) => { console.log('[ScriptError]', err); });
+      });
+
+      webview.addEventListener('page-title-updated', (e) => {
+        const title = e.title;
+        if (title && title.startsWith('__OPEN_TAB__')) {
+          const url = title.replace('__OPEN_TAB__', '');
+          const tabTitle = (() => {
+            try { return new URL(url).hostname; } catch { return '新页面'; }
+          })();
+          openPage(url, tabTitle);
+          webview.setTitle(newPage.dataset.title || '页面');
+        }
+      });
+
+      webview.addEventListener('did-get-redirect-request', (event, oldUrl, newUrl) => {
+        const title = (() => {
+          try { return new URL(newUrl).hostname; } catch { return '新页面'; }
+        })();
+        openPage(newUrl, title);
+      });
+
+      webview.addEventListener('did-finish-load', () => {
+        try {
+          newPage.dataset.title = webview.getTitle();
+          newPage.dataset.url = webview.getURL();
+          renderTabs();
+        } catch(err) {}
+      });
+
+      contentArea.appendChild(newPage);
+      switchPage(pageId);
+    }
+
+    document.getElementById('addTabBtn').onclick = () => {
+      openPage('https://www.google.com', 'Google');
+    };
+
+    document.getElementById('demoLink').onclick = () => {
+      openPage('https://www.google.com', 'Google');
+    };
+
+    renderTabs();
+
+    document.getElementById('scanBtn').onclick = scanWifi;
+    document.getElementById('toggleLogBtn').onclick = toggleLog;
+    document.getElementById('cancelConnectBtn').onclick = closeModal;
+    document.getElementById('confirmConnectBtn').onclick = confirmConnect;
+    document.getElementById('passwordInput').addEventListener('keyup', (e) => { if (e.key === 'Enter') confirmConnect(); });
+    document.getElementById('connectModal').addEventListener('click', (e) => { if (e.target.classList.contains('modal-overlay')) closeModal(); });
 
     function log(message, type = 'info') {
       const logArea = document.getElementById('logArea');
@@ -425,23 +458,13 @@
       logArea.scrollTop = logArea.scrollHeight;
     }
 
-    function toggleLog() {
-      logVisible = !logVisible;
-      document.getElementById('logArea').classList.toggle('active', logVisible);
-    }
-
-    function getSignalLevel(signal) {
-      if (signal >= -50) return 4;
-      if (signal >= -60) return 3;
-      if (signal >= -70) return 2;
-      return 1;
-    }
+    function toggleLog() { logVisible = !logVisible; document.getElementById('logArea').classList.toggle('active', logVisible); }
+    function getSignalLevel(signal) { if (signal >= -50) return 4; if (signal >= -60) return 3; if (signal >= -70) return 2; return 1; }
 
     function renderWifiList(networks) {
       const list = document.getElementById('wifiList');
       const empty = document.getElementById('emptyState');
       const loading = document.getElementById('loading');
-
       loading.classList.remove('active');
 
       if (!networks || Object.keys(networks).length === 0) {
@@ -459,11 +482,10 @@
         const level = getSignalLevel(signal);
         const item = document.createElement('li');
         item.className = 'wifi-item';
+        item.setAttribute('data-ssid', ssid);
         item.innerHTML = `
           <div class="wifi-info">
-            <div class="wifi-icon">
-              <i class="fas fa-wifi"></i>
-            </div>
+            <div class="wifi-icon"><i class="fas fa-wifi"></i></div>
             <span class="wifi-name">${ssid}</span>
           </div>
           <div class="wifi-signal">
@@ -473,11 +495,7 @@
             <span class="signal-text">${signal} dBm</span>
           </div>
         `;
-        item.onclick = (function(s) {
-          return function() {
-            openConnectModal(s);
-          };
-        })(ssid);
+        item.onclick = function() { openConnectModal(this.getAttribute('data-ssid')); };
         list.appendChild(item);
       });
     }
@@ -499,12 +517,10 @@
       const btn = document.getElementById('scanBtn');
       const loading = document.getElementById('loading');
       const empty = document.getElementById('emptyState');
-
       btn.disabled = true;
       loading.classList.add('active');
       empty.style.display = 'none';
       document.getElementById('wifiList').innerHTML = '';
-
       log('开始扫描Wi-Fi网络...');
 
       try {
@@ -521,23 +537,18 @@
     async function confirmConnect() {
       const password = document.getElementById('passwordInput').value;
       const ssidToConnect = currentSsid;
+      log(`confirmConnect 被调用，currentSsid=${ssidToConnect}, password长度=${password.length}`);
 
-      if (!ssidToConnect) {
-        log('错误: 未选择Wi-Fi网络', 'error');
-        return;
-      }
-
-      if (!password) {
-        alert('请输入密码');
-        return;
-      }
+      if (!ssidToConnect) { log('错误: 未选择Wi-Fi网络', 'error'); return; }
+      if (!password) { alert('请输入密码'); return; }
 
       closeModal();
       log(`正在连接 ${ssidToConnect}...`);
 
       try {
+        log(`调用 wifiAPI.connect("${ssidToConnect}", "${password}")`);
         const result = await window.wifiAPI.connect(ssidToConnect, password);
-        log(`原始返回: ${JSON.stringify(result)}`);
+        log(`connect 返回: ${JSON.stringify(result)}`);
         if (result.success) {
           log(`成功连接到 ${ssidToConnect}`, 'success');
           updateStatus(true);
@@ -553,26 +564,9 @@
     function updateStatus(connected) {
       const dot = document.getElementById('statusDot');
       const text = document.getElementById('statusText');
-      if (connected) {
-        dot.classList.add('connected');
-        text.textContent = '已连接';
-      } else {
-        dot.classList.remove('connected');
-        text.textContent = '未连接';
-      }
+      if (connected) { dot.classList.add('connected'); text.textContent = '已连接'; }
+      else { dot.classList.remove('connected'); text.textContent = '未连接'; }
     }
-
-    document.getElementById('passwordInput').addEventListener('keyup', (e) => {
-      if (e.key === 'Enter') {
-        confirmConnect();
-      }
-    });
-
-    document.getElementById('connectModal').addEventListener('click', (e) => {
-      if (e.target.classList.contains('modal-overlay')) {
-        closeModal();
-      }
-    });
   </script>
 </body>
 </html>

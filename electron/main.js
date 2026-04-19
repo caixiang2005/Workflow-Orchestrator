@@ -1,25 +1,51 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const { spawn } = require('child_process');
+const fs = require('fs');
 
-function getPythonPath() {
-  const venvPath = path.join(__dirname, '..', 'src', 'desktop', 'venv', 'Scripts', 'python.exe');
-  const fs = require('fs');
+let mainWindow;
+
+function getPythonPath(){
+  const packedBinPath = path.join(process.resourcesPath, 'bin', 'wifi.exe');
+  if (fs.existsSync(packedBinPath)) {
+    return packedBinPath;
+  }
+
+  const devBinPath = path.join(__dirname, 'bin', 'wifi.exe');
+  if (fs.existsSync(devBinPath)) {
+    return devBinPath;
+  }
+
+  const venvPath = path.join(__dirname, '..', 'src', 'desktop', 'venv', 'Scripts','python.exe')
   if (fs.existsSync(venvPath)) {
     return venvPath;
   }
-  return process.platform === 'win32' ? 'python' : 'python3';
+
+  return 'python';
+}
+
+function isExeMode(pythonExe) {
+  return pythonExe.endsWith('.exe') && !pythonExe.includes('python.exe');
 }
 
 function executePython(scriptPath, args, workingDir) {
   return new Promise((resolve, reject) => {
     const pythonExe = getPythonPath();
-    const spawnArgs = args.map(arg => String(arg));
-    
-    const pythonProcess = spawn(pythonExe, [scriptPath, ...spawnArgs], {
+    let spawnArgs;
+    let cwd;
+
+    if (isExeMode(pythonExe)) {
+      spawnArgs = args;
+      cwd = path.dirname(pythonExe);
+    } else {
+      spawnArgs = [scriptPath, ...args];
+      cwd = workingDir || path.dirname(scriptPath);
+    }
+
+    const pythonProcess = spawn(pythonExe, spawnArgs, {
       encoding: 'utf-8',
       shell: false,
-      cwd: workingDir || path.dirname(scriptPath),
+      cwd: cwd,
       windowsHide: true
     });
 
@@ -36,8 +62,8 @@ function executePython(scriptPath, args, workingDir) {
 
     pythonProcess.on('close', (code) => {
       console.log('[Python stdout]', stdout);
-      console.log('[Python stderr]', stderr);
-      if (code !== 0 && !stdout) {
+      if (code !== 0) {
+        console.error('[Python stderr]', stderr);
         reject(new Error(`Python进程退出码: ${code}`));
       } else {
         try {
@@ -58,19 +84,34 @@ function executePython(scriptPath, args, workingDir) {
 }
 
 function createWindow() {
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
     title: "Workflow Launcher",
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js')
+      preload: path.join(__dirname, 'preload.js'),
+      webviewTag: true
     }
   });
 
   mainWindow.loadFile(path.join(__dirname, 'public/offline.html'));
   mainWindow.setMenu(null);
+
+  mainWindow.webContents.on('did-attach-webview', (event, webContents) => {
+    webContents.setWindowOpenHandler(({ url }) => {
+      mainWindow.webContents.send('open-new-tab', url);
+      return { action: 'deny' };
+    });
+
+    webContents.on('will-navigate', (event, url) => {
+      if (url.startsWith('http://') || url.startsWith('https://')) {
+        event.preventDefault();
+        mainWindow.webContents.send('open-new-tab', url);
+      }
+    });
+  });
 }
 
 app.whenReady().then(createWindow);
@@ -78,6 +119,12 @@ app.whenReady().then(createWindow);
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
+  }
+});
+
+app.on('activate', () => {
+  if (BrowserWindow.getAllWindows().length === 0) {
+    createWindow();
   }
 });
 

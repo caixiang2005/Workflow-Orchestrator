@@ -68,9 +68,12 @@ echo timeout=600000 >> .npmrc
 
 # 尝试安装
 npm install electron@33 --save-dev
+npm install electron-builder --save-dev
 ```
 ## 
 
 ## 注意事项
 - pywifi 在 Windows 下需要管理员权限运行
 - 注意需要设置到国内镜像去装elctron
+- 会将desktop离线的命令通过pyinstaller打包存放到electron/bin下
+- 在将整个内容打包后需要将可执行文件夹存放在打包下的bin

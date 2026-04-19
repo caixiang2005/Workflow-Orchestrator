@@ -1,2 +1,15 @@
+altgraph==0.17.5
+bottle==0.13.4
+cffi==2.0.0
+clr_loader==0.2.10
 comtypes==1.4.16
+packaging==26.1
+pefile==2024.8.26
+proxy_tools==0.1.0
+pycparser==3.0
+pyinstaller==6.19.0
+pyinstaller-hooks-contrib==2026.4
+pythonnet==3.0.5
 pywifi==1.1.12
+pywin32-ctypes==0.2.3
+typing_extensions==4.15.0

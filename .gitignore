@@ -9,6 +9,11 @@ electron/node_modules/
 electron/package-lock.json   
 electron/.npmrc
 
+# dist
+dist/
+# 可执行文件
+*.exe
+
 # ai操作内容
 ai_op_logs/
 .trae/

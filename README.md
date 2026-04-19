@@ -1,9 +1,14 @@
 # 通用型智能工具集的设计与实现
 
 ## 环境要求
-- Python 3.11.4
-- Windows 11(桌面版)
-
+1. 操作系统：Windows 11(桌面版)
+2. Node.js：v24.13.0
+3. npm：11.12.1
+4. Electron：v33.4.11
+5. Python：3.11.4
+6. src/desktop python依赖库：
+   - comtypes==1.4.16
+   - pywifi==1.1.12
 ## 项目结构
 ```
 通用型智能工具集的设计与实现/
@@ -31,6 +36,8 @@
 │   ├── node_modules/          # npm 依赖（自动生成）
 │   ├── public/                # 前端静态资源
 │   │   └── offline.html       # 离线管理页面（WiFi 连接界面）
+│   ├──bin                     # 存放可执行文件
+│   ├── disk                   # 打包安装目录 
 │   ├── .npmrc                 # npm 配置（镜像源）
 │   ├── main.js                # Electron 主进程入口
 │   ├── preload.js             # 开放安全接口内容
