@@ -13,10 +13,10 @@
 ```
 通用型智能工具集的设计与实现/
 ├── .gitignore                 # Git 忽略规则
-├── .python-version            # Python 版本声明（如 3.11）
+├── .python-version            # Python 版本声明
 ├── Dockerfile                 # 容器化部署配置
 ├── README.md                  # 项目说明文档
-├── requirements.txt           # 全局 Python 依赖（如 Flask、pywifi）
+├── requirements.txt           # 全局 Python 依赖
 │
 ├── .trae/ 
 │   └── rules                  # 记录vibecoding规则
