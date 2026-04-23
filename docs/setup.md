@@ -70,7 +70,24 @@ echo timeout=600000 >> .npmrc
 npm install electron@33 --save-dev
 npm install electron-builder --save-dev
 ```
-## 
+## backend后端环境
+
+### 1.创建虚拟环境
+```bash
+# 进入backend文件夹内
+python -m venv venv
+```
+
+### 2.激活虚拟环境
+```
+venv\Scripts\activate
+```
+
+### 3.安装依赖
+```
+pip install -r requirements.txt
+```
+
 
 ## 注意事项
 - pywifi 在 Windows 下需要管理员权限运行

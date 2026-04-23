@@ -32,12 +32,16 @@
 │   ├── dev_log.md             # 开发日志
 │   └── setup.md               # 环境搭建指南
 │
+├── frontend/                  # 前端项目   
+│
+├── backend/                   # 后端项目
+│
 ├── electron/                  # Electron 桌面应用（多标签页壳）
 │   ├── node_modules/          # npm 依赖（自动生成）
 │   ├── public/                # 前端静态资源
 │   │   └── offline.html       # 离线管理页面（WiFi 连接界面）
 │   ├──bin                     # 存放可执行文件
-│   ├── disk                   # 打包安装目录 
+│   ├── dist                   # 打包安装目录 
 │   ├── .npmrc                 # npm 配置（镜像源）
 │   ├── main.js                # Electron 主进程入口
 │   ├── preload.js             # 开放安全接口内容
