@@ -4,17 +4,14 @@
 1. 操作系统：Windows 11(桌面版)
 2. Node.js：v24.13.0
 3. npm：11.12.1
-4. Electron：v33.4.11
-5. Python：3.11.4
-6. src/desktop python依赖库：
-   - comtypes==1.4.16
-   - pywifi==1.1.12
+4. Docker  29.4.0
+5. Python: 3.11.4
+
 ## 项目结构
 ```
 通用型智能工具集的设计与实现/
 ├── .gitignore                 # Git 忽略规则
 ├── .python-version            # Python 版本声明
-├── Dockerfile                 # 容器化部署配置
 ├── README.md                  # 项目说明文档
 ├── requirements.txt           # 全局 Python 依赖
 │

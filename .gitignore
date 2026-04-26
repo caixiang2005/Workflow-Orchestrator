@@ -21,5 +21,8 @@ ai_op_logs/
 # 忽视figma文件
 .figma/
 
-# 忽视后端文件内容
-backend/venv/
+# 忽视虚拟环境
+venv/
+
+# 忽视配置文件
+.env
