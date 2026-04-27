@@ -3,7 +3,10 @@ from pydantic import BaseModel, EmailStr
 import random
 import os
 from send_mail import send_qq_email, load_email_template
+from dotenv import load_dotenv  
 
+# 加载配置文件
+load_dotenv()
 app = FastAPI()
 
 # 临时存储邮箱和验证码的字典(redis)
@@ -30,14 +33,18 @@ def send_code(req: SendCodeRequest) -> dict:
     body_type = 'verify_code'  
 
     # 这里根据数据库内查询结果判断是否需要发送验证码邮件 
-    
 
+    # 从环境变量获取logo URL并加载模板
+    logo_url = os.getenv('LOGO_URL')
     if body_type == 'verify_code':
-        # 从环境变量获取logo URL并加载模板
-        logo_url = os.getenv('LOGO_URL')
+         # 构建验证码邮件内容
         body = load_email_template('verify_code_email.html', logo_url=logo_url, code=code)
     else:
-        pass
+        register_url = os.getenv("REGISTER_URL")
+
+        # 没有记录发送注册模版
+        body = load_email_template('register_email.html', logo_url=logo_url, register_url=register_url)
+        
 
     success = send_qq_email(to_email, subject, body)
     

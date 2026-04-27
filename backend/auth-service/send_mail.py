@@ -2,10 +2,7 @@ import smtplib
 from email.mime.text import MIMEText
 from email.header import make_header
 import os
-from dotenv import load_dotenv  
 
-
-load_dotenv()
 
 def load_email_template(filename: str, **kwargs) -> str:
     """
