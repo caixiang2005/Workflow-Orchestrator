@@ -5,6 +5,11 @@ import os
 from send_mail import send_qq_email, load_email_template
 from dotenv import load_dotenv  
 
+from redis_client import save_code, get_code, test_redis_connection
+from fastapi import HTTPException
+from redis import ConnectionError
+
+
 # 加载配置文件
 load_dotenv()
 app = FastAPI()
@@ -22,23 +27,45 @@ def send_code(req: SendCodeRequest) -> dict:
     发送验证码到指定邮箱
     """
     to_email = req.email
-    code = str(random.randint(100000, 999999))
-    
-    temp_email_storage[to_email] = code
 
+    # 测试数据库连接状态
+    try:
+        if not test_redis_connection():
+            raise ConnectionError("Redis 未连接")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="验证码服务不可用，请稍后再试")
+
+
+
+    # 验证码还有效
+    if get_code(to_email):
+        return {"message": f"验证码已发送到邮箱{to_email}，请勿重复请求", "code": 400}
+    
+    
     subject = "【incx】邮箱登陆验证"
     body = ''
 
     # 根据不同的邮件类型构建邮件内容
-    body_type = 'verify_cod'  
+    body_type = 'verify_code'  
 
     # 这里根据数据库内查询结果判断是否需要发送验证码邮件 
 
     # 从环境变量获取logo URL并加载模板
     logo_url = os.getenv('LOGO_URL')
-    
+ 
     if body_type == 'verify_code':
-         # 构建验证码邮件内容
+        try:
+            # 生成6位随机验证码
+            code = str(random.randint(100000, 999999))
+
+            if test_redis_connection():
+                save_code(to_email, code)
+
+        except Exception as e:
+            print(f"保存验证码失败: {e}")
+            raise HTTPException(status_code=500, detail="验证码服务不可用，请稍后再试")
+
+        # 构建验证码邮件内容
         body = load_email_template('verify_code_email.html', logo_url=logo_url, code=code)
     else:
         register_url = os.getenv("REGISTER_URL")
