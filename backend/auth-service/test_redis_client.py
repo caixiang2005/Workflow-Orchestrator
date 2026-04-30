@@ -1,5 +1,7 @@
 import redis
 import os
+import logging
+logger = logging.getLogger(__name__)
 
 redis_client = redis.Redis(
     host=os.getenv("REDIS_HOST", "localhost"),
@@ -14,7 +16,7 @@ def test_redis_connection():
         redis_client.ping()
         return True
     except redis.ConnectionError as e:
-        print(f"Redis 连接失败: {e}")
+        logger.error(f"Redis 连接失败: {e}")
         return False
 
 # 保存验证码到 Redis
@@ -26,23 +28,24 @@ def save_code(email: str, code:str, ex = 300):
     """
     try:
         redis_client.set(email, code, ex=ex)
-        print(f"正在保存验证码到 Redis: {email} -> {code}")
+        logger.info(f"正在保存验证码到 Redis: {email} -> {code}")
         return True
     except Exception as e:
-        print(f"保存验证码失败: {e}")
+        logger.error(f"保存验证码失败: {e}")
         return False
 
 def get_code(email: str):
     "获取 Redis 中保存的验证码"
     try:
         code = redis_client.get(email)
-        print(f"正在从 Redis 获取验证码: {email} -> {code}")
+        logger.info(f"正在从 Redis 获取验证码: {email} -> {code}")
         return code
     except Exception as e:
-        print(f"获取验证码失败: {e}")
+        logger.error(f"获取验证码失败: {e}")
         return None
     
 if __name__ == "__main__":
     from dotenv import load_dotenv
     # 加载环境变量
     load_dotenv()
+    test_redis_connection()

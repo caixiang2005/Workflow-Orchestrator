@@ -1,11 +1,13 @@
 import redis
 import os
 
-redis_client = redis.Redis(
+pool = redis.ConnectionPool(
     host=os.getenv("REDIS_HOST", "localhost"),
     port=int(os.getenv("REDIS_PORT", 6379)),
-    decode_responses=True
+    decode_responses=True,
+    max_connections=20
 )
+redis_client = redis.Redis(connection_pool=pool)
 
 # 测试连接
 def test_redis_connection():
