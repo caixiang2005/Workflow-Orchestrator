@@ -27,7 +27,8 @@ def save_code(email: str, code:str, ex = 300):
     ex: 验证码过期时间，单位为秒，默认为300秒（5分钟）
     """
     try:
-        redis_client.set(email, code, ex=ex)
+        key = f"code:{email}"
+        redis_client.set(key, code, ex=ex)
         print(f"正在保存验证码到 Redis: {email} -> {code}")
         return True
     except Exception as e:
@@ -37,9 +38,11 @@ def save_code(email: str, code:str, ex = 300):
 def get_code(email: str):
     "获取 Redis 中保存的验证码"
     try:
-        code = redis_client.get(email)
+        key = f"code:{email}"
+        code = redis_client.get(key)
         print(f"正在从 Redis 获取验证码: {email} -> {code}")
         return code
     except Exception as e:
         print(f"获取验证码失败: {e}")
         return None
+

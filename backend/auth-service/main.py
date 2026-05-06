@@ -49,13 +49,13 @@ async def send_code(req: SendCodeRequest) -> dict:
     except Exception as e:
         raise HTTPException(status_code=500, detail="验证码服务不可用，请稍后再试")
 
-
-
     # 验证码还有效
     if get_code(to_email):
         return {"message": f"验证码已发送到邮箱{to_email}，请勿重复请求", "code": 400}
     
+    # 注册链接还有效
     
+
     subject = "【incx】邮箱登陆验证"
     body = ''
 
