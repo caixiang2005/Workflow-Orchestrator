@@ -37,7 +37,7 @@ async def init_db_pool():
 
         async with pool.acquire() as conn:
             await conn.execute("SELECT 1")
-        logger.info(f"数据库连接池已初始化: {host}:{port} 用户: {user} 数据库: {database}")
+        logger.debug(f"数据库连接池已初始化: {host}:{port} 用户: {user} 数据库: {database}")
         return pool
     except Exception as e:
         logger.error(f"数据库连接池初始化失败: {e}")
@@ -50,7 +50,7 @@ async def close_db_pool():
     global pool
     if pool:
         await pool.close()
-        logger.info("数据库连接池已关闭")
+        logger.debug("数据库连接池已关闭")
 
 async def get_user_by_email(email: str):
     """"

@@ -1,5 +1,9 @@
 import redis
 import os
+import secrets
+
+import logging
+logger = logging.getLogger(__name__)
 
 pool = redis.ConnectionPool(
     host=os.getenv("REDIS_HOST", "localhost"),
@@ -9,6 +13,7 @@ pool = redis.ConnectionPool(
 )
 redis_client = redis.Redis(connection_pool=pool)
 
+
 # 测试连接
 def test_redis_connection():
     """测试 Redis 连接是否成功"""
@@ -16,7 +21,7 @@ def test_redis_connection():
         redis_client.ping()
         return True
     except redis.ConnectionError as e:
-        print(f"Redis 连接失败: {e}")
+        logger.error(f"Redis 连接失败: {e}")
         return False
 
 # 保存验证码到 Redis
@@ -29,10 +34,10 @@ def save_code(email: str, code:str, ex = 300):
     try:
         key = f"code:{email}"
         redis_client.set(key, code, ex=ex)
-        print(f"正在保存验证码到 Redis: {email} -> {code}")
+        logger.debug(f"正在保存验证码到 Redis: {email} -> {code}")
         return True
     except Exception as e:
-        print(f"保存验证码失败: {e}")
+        logger.error(f"保存验证码失败: {e}")
         return False
 
 def get_code(email: str):
@@ -40,9 +45,58 @@ def get_code(email: str):
     try:
         key = f"code:{email}"
         code = redis_client.get(key)
-        print(f"正在从 Redis 获取验证码: {email} -> {code}")
+        logger.debug(f"正在从 Redis 获取验证码: {email} -> {code}")
         return code
     except Exception as e:
-        print(f"获取验证码失败: {e}")
+        logger.error(f"获取验证码失败: {e}")
         return None
 
+# 设置注册冷却时间
+def set_reg_cooldown(email: str, ex = 600):
+    """设置注册冷却时间"""
+    try:
+        key = f"reg_cooldown:{email}"
+        redis_client.set(key, "1", ex = ex)
+        logger.debug(f"正在设置注册冷却时间: {email}")
+    except Exception as e:
+        logger.error(f"设置注册冷却时间失败: {e}")
+
+# 确认是否在注册冷却时间内
+def is_in_reg_cooldown(email: str):
+    """确认是否在注册冷却时间内"""
+    try:
+        key = f"reg_cooldown:{email}"
+        return redis_client.exists(key) == 1
+    except Exception as e:
+        logger.error(f"检查注册冷却时间失败: {e}")
+        return False
+
+# 生成安全token
+def generate_register_token():
+    """生成安全的注册链接token"""
+    return secrets.token_urlsafe(32)
+
+def save_register_token(token: str, email: str, ex: int = 86400):
+    """保存注册链接token到 Redis，键为 token，值为邮箱，默认过期1天"""
+    try:
+        key = f"reg_token:{token}"
+        redis_client.setex(key, ex, email)  
+        logger.debug(f"保存注册token: {key} -> {email}")
+        return True
+    except Exception as e:
+        logger.error(f"保存注册token失败: {e}")
+        return False
+
+
+def get_email_by_register_token(token: str):
+    """根据注册链接token获取关联的邮箱"""
+    try:
+        key = f"reg_token:{token}"
+        email = redis_client.get(key)
+        logger.debug(f"根据注册token获取邮箱: {key} -> {email}")
+        return email
+    except Exception as e:
+        logger.error(f"获取注册token关联邮箱失败: {e}")
+        return None
+if __name__ == "__main__":
+    pass

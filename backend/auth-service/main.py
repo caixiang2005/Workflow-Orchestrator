@@ -6,11 +6,15 @@ from send_mail import send_qq_email, load_email_template
 from dotenv import load_dotenv  
 from logging_config import setup_logging
 import logging
-from redis_client import save_code, get_code, test_redis_connection
+
+from redis_client import save_code, get_code, test_redis_connection, set_reg_cooldown, is_in_reg_cooldown
+from redis_client import generate_register_token, save_register_token, get_email_by_register_token
+from db import init_db_pool, close_db_pool, get_user_by_email
+
 from fastapi import HTTPException
 from redis import ConnectionError
 from contextlib import asynccontextmanager
-from db import init_db_pool, close_db_pool, get_user_by_email
+
 
 @asynccontextmanager
 async def lifespan(app:FastAPI):
@@ -51,10 +55,13 @@ async def send_code(req: SendCodeRequest) -> dict:
 
     # 验证码还有效
     if get_code(to_email):
+        logger.info(f"重复请求验证码: {to_email} 已有有效验证码")
         return {"message": f"验证码已发送到邮箱{to_email}，请勿重复请求", "code": 400}
     
     # 注册链接还有效
-    
+    if is_in_reg_cooldown(to_email):
+        logger.info(f"重复请求注册链接: {to_email} 已有有效注册链接")
+        return {"message": f"注册链接已发送到邮箱{to_email}，请勿重复请求", "code": 400}
 
     subject = "【incx】邮箱登陆验证"
     body = ''
@@ -81,8 +88,24 @@ async def send_code(req: SendCodeRequest) -> dict:
         # 构建验证码邮件内容
         body = load_email_template('verify_code_email.html', logo_url=logo_url, code=code)
     else:
-        register_url = os.getenv("REGISTER_URL")
+        try:
+            # 生成注册链接
+            register_url = os.getenv("REGISTER_URL")
 
+            if test_redis_connection():
+                # 设置注册冷却时间，防止重复发送注册链接
+                set_reg_cooldown(to_email)
+
+            
+        except Exception as e:
+            logger.error(f"设置注册冷却时间失败: {e}")
+            raise HTTPException(status_code=500, detail="验证码服务不可用，请稍后再试")   
+        
+        register_url = os.getenv("REGISTER_URL")
+        register_token = generate_register_token()  # 生成安全的注册链接token
+        logger.info(f"生成注册链接token: {register_token} for {to_email}")
+        save_register_token(register_token, to_email)   # 将生成的注册链接token保存到Redis，并与邮箱关联，后续注册时验证token合法性
+        register_url = f"{register_url}?token={register_token}"  # 将token作为查询参数附加到注册链接上
         # 没有记录发送注册模版
         body = load_email_template('register_email.html', logo_url=logo_url, register_url=register_url)
         
@@ -93,3 +116,18 @@ async def send_code(req: SendCodeRequest) -> dict:
         return {"message": f"验证码已发送到邮箱{to_email}", "code": 200}
     else:
         return {"message": "验证码发送失败，请稍后重试", "code": 500}
+    
+
+
+@app.get("/api/v1/auth/register")
+async def get_register_info(token: str):
+    """根据注册链接token获取注册信息"""
+    try:
+        email = get_email_by_register_token(token)  # 从Redis中根据token获取关联的邮箱
+        if email:
+            return {"email": email, "code": 200}
+        else:
+            raise HTTPException(status_code=400, detail="注册链接无效或已过期")
+    except Exception as e:
+        logger.error(f"获取注册链接信息失败: {e}")
+        raise HTTPException(status_code=500, detail="服务器错误，请稍后再试")
