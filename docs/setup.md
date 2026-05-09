@@ -88,6 +88,46 @@ venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
+## frontend前端环境
+
+### 项目基础库
+Vite + React + TypeScript
+``` bash
+npm create vite@latest . -- --template react-ts
+```
+
+### 安装项目依赖
+会根据项目中已经存在的package.json 文件，将所需的依赖包下载到项目本地的 node_modules 目录，并生成 package-lock.json 锁版本
+``` bash
+npm install
+```
+
+### 安装其他必备库
+- react-router-dom
+React 路由库，用于实现单页应用（SPA）的页面切换、URL 参数读取（如注册链接中的 token）。
+- axios
+基于 Promise 的 HTTP 客户端，用于向后端 API 发送请求（如登录、发送验证码、注册等）。
+- zustand
+轻量级状态管理库，用于管理全局状态（例如用户登录 token、用户信息、主题等）。
+- react-hook-form
+高性能表单管理库，用于简化表单状态、验证、错误处理。
+- zod
+声明式数据验证库，可以定义 schema 并验证数据。
+- @hookform/resolvers
+桥接库，让 react-hook-form 能使用 zod / yup 等验证库。
+
+- tailwindcss
+实用优先的 CSS 框架，提供大量原子类（如 flex、p-4、text-center）。
+- postcss
+CSS 后处理器，Tailwind 依赖它来解析 CSS 并生成最终样式。
+- autoprefixer
+自动为 CSS 属性添加浏览器厂商前缀（如 -webkit-），确保兼容性。
+
+``` bash
+npm install react-router-dom axios zustand react-hook-form zod @hookform/resolvers
+npm install -D tailwindcss@3 postcss autoprefixer
+npx tailwindcss init -p
+```
 
 ## 注意事项
 - pywifi 在 Windows 下需要管理员权限运行

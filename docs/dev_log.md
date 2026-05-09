@@ -308,3 +308,21 @@ redis_client.set(key, code, ex=ex)
 - 搭建好前端的内容，再次之前需要好好调查内容
 - 完成注册接口的post请求部分
 - figma标记一下后面 我有时间还要继续学习
+
+## 2026-5-9
+
+## 今天做了什么
+- 搭建好了前端的环境内容
+
+## 今天遇到了什么问题
+- vite的PostCSS版本和Tailwind版本不匹配，后面将T爱了win的CSS降级
+``` bash
+npm uninstall tailwindcss postcss autoprefixer
+npm install -D tailwindcss@3 postcss autoprefixer
+npx tailwindcss init -p
+```
+
+## 后续需要做什么
+- 更新设计文档内关于前端的部分
+- 搭建小demo接收对应email
+- 脑海记得figma
