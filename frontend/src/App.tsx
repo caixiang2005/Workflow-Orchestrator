@@ -1,8 +1,14 @@
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import RegisterPage from './pages/RegisterPage';
+
 function App() {
   return (
-    <div className="bg-red-500 text-white p-4 text-center">
-      Tailwind CSS 测试
-    </div>
-  )
+    <BrowserRouter>
+      <Routes>
+        <Route path="/register" element={<RegisterPage />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
-export default App
+
+export default App;
