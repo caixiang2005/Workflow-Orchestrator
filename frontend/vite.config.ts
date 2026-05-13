@@ -4,11 +4,12 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
+    host: '0.0.0.0',      // 监听所有网络接口（允许外部访问）
+    port: 5173,            // 明确端口（可选，默认就是5173）
     proxy: {
-      '/api': {                     // 匹配前端请求中以 /api 开头的路径
-        target: 'http://localhost:8000',   // 后端服务器地址
-        changeOrigin: true,        // 修改请求头中的 origin 为目标 URL
-        // rewrite: (path) => path.replace(/^\/api/, '') // 如果需要去掉 /api 前缀，取消注释
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
       }
     }
   }

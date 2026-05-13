@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import apiClient from '../api/client';
+import Input from '../components/Input';
 
 export default function RegisterPage() {
   const [searchParams] = useSearchParams();
@@ -9,6 +10,9 @@ export default function RegisterPage() {
   const [email, setEmail] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // 新增状态：演示输入框的值
+  const [demoValue, setDemoValue] = useState('');
 
   useEffect(() => {
     if (!token) {
@@ -36,7 +40,14 @@ export default function RegisterPage() {
     <div className="p-4">
       <h1 className="text-xl font-bold">注册账号</h1>
       <p>邮箱：{email}</p>
-      {/* 后续可添加密码输入框和注册按钮 */}
+
+      {/* 正确使用 Input 组件，没有 style 属性 */}
+      <Input
+        label="演示输入框"
+        value={demoValue}
+        onChange={(e) => setDemoValue(e.target.value)}
+        placeholder="输入一些文字..."
+      />
     </div>
   );
 }
